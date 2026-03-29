@@ -22,8 +22,6 @@ export function ResultPage() {
     return <div className="flex min-h-screen items-center justify-center text-muted-foreground">No result data. Start over.</div>;
   }
 
-  const serviceName = state.sourceType === "drive" ? "Google Drive" : "Google Photos";
-
   const handleCopy = async () => {
     await navigator.clipboard.writeText(state.link);
     setCopied(true);
@@ -40,7 +38,7 @@ export function ResultPage() {
         </div>
         <h2 className="text-2xl font-bold text-foreground">Album Created!</h2>
         <p className="text-center text-sm text-muted-foreground">
-          {state.itemCount} {state.itemCount === 1 ? "item has" : "items have"} been added to your new {serviceName} folder.
+          {state.itemCount} {state.itemCount === 1 ? "item has" : "items have"} been added to your new Google Drive folder.
         </p>
         <div className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-4 py-3">
           <span className="truncate font-mono text-xs text-muted-foreground">{state.link}</span>
@@ -50,7 +48,7 @@ export function ResultPage() {
         </div>
         <Button className="w-full" onClick={() => window.open(state.link, "_blank")}>
           <ExternalLink className="mr-2 h-4 w-4" />
-          Open in {serviceName}
+          Open in Google Drive
         </Button>
         <Button variant="outline" className="w-full" onClick={handleStartOver}>
           Start Over

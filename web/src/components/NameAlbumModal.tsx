@@ -12,17 +12,21 @@ interface NameAlbumModalProps {
   selectedCount: number;
   defaultName: string;
   isPending: boolean;
+  sourceType: "drive" | "photos";
 }
 
-export function NameAlbumModal({ open, onClose, onConfirm, selectedCount, defaultName, isPending }: NameAlbumModalProps) {
+export function NameAlbumModal({ open, onClose, onConfirm, selectedCount, defaultName, isPending, sourceType }: NameAlbumModalProps) {
   const [name, setName] = useState(defaultName);
+  const isPhotos = sourceType === "photos";
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="bg-card">
         <DialogHeader>
-          <DialogTitle>Name Your Album</DialogTitle>
+          <DialogTitle>Save to Google Drive</DialogTitle>
           <DialogDescription>
-            Give a name to your new album with {selectedCount} selected items.
+            {isPhotos
+              ? `${selectedCount} selected items from Google Photos will be saved to a new Google Drive folder.`
+              : `Create a new Google Drive folder with ${selectedCount} selected items.`}
           </DialogDescription>
         </DialogHeader>
         <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Album name..." autoFocus />

@@ -61,6 +61,7 @@ export function GalleryPage() {
         selectedCount={selected.size}
         defaultName={`${collection.name} - Best Picks`}
         isPending={createExport.isPending}
+        sourceType={collection.sourceType}
       />
     </div>
   );

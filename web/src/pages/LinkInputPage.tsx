@@ -178,7 +178,7 @@ export function LinkInputPage() {
             ? polling
               ? "Waiting for selection..."
               : "Opening Google Photos..."
-            : "Pick from Google Photos"}
+            : "Pick from Google Photos (saves to Drive)"}
         </Button>
 
         {polling && (
