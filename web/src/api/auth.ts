@@ -20,6 +20,7 @@ export function useLogout() {
     mutationFn: () =>
       apiFetch<{ success: boolean }>("/v1/auth/logout", { method: "POST" }),
     onSuccess: () => {
+      queryClient.setQueryData(["auth", "status"], null);
       queryClient.invalidateQueries({ queryKey: ["auth"] });
     },
   });
