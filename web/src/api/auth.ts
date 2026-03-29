@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "./client";
 
 interface AuthStatus {
@@ -11,6 +11,17 @@ export function useAuthStatus() {
     queryKey: ["auth", "status"],
     queryFn: () => apiFetch<AuthStatus>("/v1/auth/status"),
     retry: false,
+  });
+}
+
+export function useLogout() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      apiFetch<{ success: boolean }>("/v1/auth/logout", { method: "POST" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["auth"] });
+    },
   });
 }
 

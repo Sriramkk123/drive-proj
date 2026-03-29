@@ -45,6 +45,11 @@ export default async function authRoutes(app: FastifyInstance, opts: { config: C
     }
   });
 
+  app.post("/v1/auth/logout", async (_request, reply) => {
+    reply.clearCookie("access_token", { path: "/" });
+    return reply.send({ success: true });
+  });
+
   app.get("/v1/auth/google", async (_request, reply) => {
     const oauth2 = createOAuth2Client();
     const url = oauth2.generateAuthUrl({
