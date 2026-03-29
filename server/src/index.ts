@@ -6,6 +6,10 @@ import { DomainError } from "./errors.js";
 import type { ErrorEnvelope } from "./types.js";
 import authPlugin from "./plugins/auth.js";
 import authRoutes from "./routes/auth.js";
+import collectionRoutes from "./routes/collections.js";
+import mediaRoutes from "./routes/media.js";
+import exportRoutes from "./routes/exports.js";
+import { CollectionStore } from "./services/collection-store.js";
 
 const config = loadConfig();
 
@@ -46,6 +50,11 @@ app.setErrorHandler((error, _request, reply) => {
 
 await app.register(authPlugin);
 await app.register(authRoutes, { config });
+
+const collectionStore = new CollectionStore(config.collectionTtlMs);
+await app.register(collectionRoutes, { store: collectionStore });
+await app.register(mediaRoutes, { store: collectionStore });
+await app.register(exportRoutes, { store: collectionStore });
 
 await app.listen({ port: config.port, host: "0.0.0.0" });
 app.log.info(`Server running on port ${config.port}`);
