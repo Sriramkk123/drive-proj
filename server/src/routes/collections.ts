@@ -4,7 +4,7 @@ import { parseGoogleLink } from "../services/link-parser.js";
 import { CollectionStore } from "../services/collection-store.js";
 import { getFolderName, listDriveMedia } from "../services/google-drive.js";
 import { getAlbumName, listPhotosMedia } from "../services/google-photos.js";
-import { NotFoundError, CollectionNotReadyError, DomainError } from "../errors.js";
+import { NotFoundError, CollectionNotReadyError } from "../errors.js";
 
 export default async function collectionRoutes(
   app: FastifyInstance,
@@ -25,15 +25,18 @@ export default async function collectionRoutes(
     const { link } = request.body as { link: string };
     const parsed = await parseGoogleLink(link);
 
-    if (parsed.sourceType === "photos") {
-      throw new DomainError(
-        "photos_unsupported",
-        "Google Photos is not supported yet. Google deprecated the Photos Library API for new projects. Please use a Google Drive folder link instead.",
-        400,
-      );
+    let name: string;
+    if (parsed.sourceType === "drive") {
+      name = await getFolderName(request.accessToken, parsed.sourceId);
+    } else {
+      // Photos links go through the Picker flow (POST /v1/photos/sessions)
+      // If someone pastes a photos link here, redirect them
+      return reply.status(400).send({
+        error: "use_photos_picker",
+        message: "For Google Photos, use the 'Pick from Google Photos' button instead.",
+        details: [],
+      });
     }
-
-    const name = await getFolderName(request.accessToken, parsed.sourceId);
 
     const collection = store.create({
       sourceType: parsed.sourceType,

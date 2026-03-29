@@ -5,8 +5,7 @@ import type { Config } from "../config.js";
 const SCOPES = [
   "https://www.googleapis.com/auth/drive.readonly",
   "https://www.googleapis.com/auth/drive.file",
-  "https://www.googleapis.com/auth/photoslibrary.readonly",
-  "https://www.googleapis.com/auth/photoslibrary.appendonly",
+  "https://www.googleapis.com/auth/photospicker.mediaitems.readonly",
   "https://www.googleapis.com/auth/userinfo.email",
 ];
 

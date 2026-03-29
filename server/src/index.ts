@@ -10,6 +10,7 @@ import authRoutes from "./routes/auth.js";
 import collectionRoutes from "./routes/collections.js";
 import mediaRoutes from "./routes/media.js";
 import exportRoutes from "./routes/exports.js";
+import photosPickerRoutes from "./routes/photos-picker.js";
 import { CollectionStore } from "./services/collection-store.js";
 
 const config = loadConfig();
@@ -60,6 +61,7 @@ const collectionStore = new CollectionStore(config.collectionTtlMs);
 await app.register(collectionRoutes, { store: collectionStore });
 await app.register(mediaRoutes, { store: collectionStore });
 await app.register(exportRoutes, { store: collectionStore });
+await app.register(photosPickerRoutes, { store: collectionStore });
 
 await app.listen({ port: config.port, host: "0.0.0.0" });
 app.log.info(`Server running on port ${config.port}`);
