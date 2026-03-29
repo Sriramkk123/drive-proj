@@ -12,7 +12,18 @@ export default async function exportRoutes(
 ) {
   const { store } = opts;
 
-  app.post("/v1/collections/:id/exports", async (request, reply) => {
+  app.post("/v1/collections/:id/exports", {
+    schema: {
+      body: {
+        type: "object",
+        required: ["name", "mediaIds"],
+        properties: {
+          name: { type: "string", minLength: 1 },
+          mediaIds: { type: "array", items: { type: "string" }, minItems: 1 },
+        },
+      },
+    },
+  }, async (request, reply) => {
     requireAuth(request);
     const { id } = request.params as { id: string };
     const { name, mediaIds } = request.body as { name: string; mediaIds: string[] };

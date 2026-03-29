@@ -51,10 +51,29 @@ export function useCollection(id: string | undefined) {
   });
 }
 
+async function fetchAllMedia(id: string): Promise<MediaResponse> {
+  const all: MediaItem[] = [];
+  let page = 1;
+  let hasNext = true;
+  let total = 0;
+
+  while (hasNext) {
+    const res = await apiFetch<MediaResponse>(
+      `/v1/collections/${id}/media?page=${page}&limit=100`,
+    );
+    all.push(...res.items);
+    total = res.total;
+    hasNext = res.hasNext;
+    page++;
+  }
+
+  return { items: all, page: 1, limit: total, total, hasNext: false };
+}
+
 export function useCollectionMedia(id: string | undefined, status: string | undefined) {
   return useQuery<MediaResponse>({
     queryKey: ["collections", id, "media"],
-    queryFn: () => apiFetch<MediaResponse>(`/v1/collections/${id}/media?page=1&limit=100`),
+    queryFn: () => fetchAllMedia(id!),
     enabled: !!id && status === "ready",
   });
 }

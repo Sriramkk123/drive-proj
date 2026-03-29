@@ -1,4 +1,5 @@
 import type { FastifyInstance } from "fastify";
+import { requireAuth } from "../plugins/auth.js";
 import { CollectionStore } from "../services/collection-store.js";
 import { NotFoundError } from "../errors.js";
 
@@ -9,13 +10,14 @@ export default async function mediaRoutes(
   const { store } = opts;
 
   app.get("/v1/media/:mediaId/thumbnail", async (request, reply) => {
+    requireAuth(request);
     const { mediaId } = request.params as { mediaId: string };
     const result = store.findMediaById(mediaId);
     if (!result) throw new NotFoundError("Media");
 
-    const { media, accessToken } = result;
+    const { media } = result;
     const response = await fetch(media.thumbnailUrl, {
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: { Authorization: `Bearer ${request.accessToken}` },
     });
 
     if (!response.ok) {

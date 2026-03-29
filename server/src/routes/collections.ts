@@ -12,7 +12,15 @@ export default async function collectionRoutes(
 ) {
   const { store } = opts;
 
-  app.post("/v1/collections", async (request, reply) => {
+  app.post("/v1/collections", {
+    schema: {
+      body: {
+        type: "object",
+        required: ["link"],
+        properties: { link: { type: "string" } },
+      },
+    },
+  }, async (request, reply) => {
     requireAuth(request);
     const { link } = request.body as { link: string };
     const parsed = parseGoogleLink(link);
@@ -74,11 +82,15 @@ export default async function collectionRoutes(
     const sort = query.sort === "created_at" ? "created_at" : "name";
     const order = query.order === "desc" ? "desc" : "asc";
 
-    let sorted = [...collection.media];
-    sorted.sort((a, b) => {
-      const cmp = a.name.localeCompare(b.name);
-      return order === "asc" ? cmp : -cmp;
-    });
+    const sorted = [...collection.media];
+    if (sort === "name") {
+      sorted.sort((a, b) => {
+        const cmp = a.name.localeCompare(b.name);
+        return order === "asc" ? cmp : -cmp;
+      });
+    } else if (sort === "created_at" && order === "desc") {
+      sorted.reverse();
+    }
 
     const start = (page - 1) * limit;
     const items = sorted.slice(start, start + limit).map((m) => ({
