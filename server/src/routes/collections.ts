@@ -23,7 +23,7 @@ export default async function collectionRoutes(
   }, async (request, reply) => {
     requireAuth(request);
     const { link } = request.body as { link: string };
-    const parsed = parseGoogleLink(link);
+    const parsed = await parseGoogleLink(link);
 
     let name: string;
     if (parsed.sourceType === "drive") {
