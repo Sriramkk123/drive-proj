@@ -3,8 +3,11 @@ import type { FastifyInstance } from "fastify";
 import { requireAuth } from "../plugins/auth.js";
 import { CollectionStore } from "../services/collection-store.js";
 import { NotFoundError, CollectionNotReadyError } from "../errors.js";
-import { createDriveFolder, copyFilesToFolder } from "../services/google-drive.js";
-import { createPhotosAlbum, addItemsToAlbum } from "../services/google-photos.js";
+import {
+  createDriveFolder,
+  copyFilesToFolder,
+  uploadFileToDriveFromUrl,
+} from "../services/google-drive.js";
 
 export default async function exportRoutes(
   app: FastifyInstance,
@@ -33,25 +36,33 @@ export default async function exportRoutes(
     if (collection.status !== "ready") throw new CollectionNotReadyError();
 
     const selectedMedia = collection.media.filter((m) => mediaIds.includes(m.id));
-    let link: string;
+    const folderId = await createDriveFolder(request.accessToken, name);
 
     if (collection.sourceType === "drive") {
-      const folderId = await createDriveFolder(request.accessToken, name);
       const sourceFileIds = selectedMedia.map((m) => m.sourceFileId);
       await copyFilesToFolder(request.accessToken, sourceFileIds, folderId);
-      link = `https://drive.google.com/drive/folders/${folderId}`;
     } else {
-      const albumId = await createPhotosAlbum(request.accessToken, name);
-      const sourceMediaIds = selectedMedia.map((m) => m.sourceFileId);
-      await addItemsToAlbum(request.accessToken, albumId, sourceMediaIds);
-      link = `https://photos.google.com/album/${albumId}`;
+      // Photos: download from baseUrl and upload to Drive
+      for (const media of selectedMedia) {
+        // Use full-resolution URL (append =d for download)
+        const downloadUrl = media.thumbnailUrl.replace(/=w\d+-h\d+$/, "=d");
+        await uploadFileToDriveFromUrl(
+          request.accessToken,
+          downloadUrl,
+          media.name,
+          media.mimeType,
+          folderId,
+        );
+      }
     }
+
+    const link = `https://drive.google.com/drive/folders/${folderId}`;
 
     return reply.status(201).send({
       id: randomUUID(),
       name,
       link,
-      sourceType: collection.sourceType,
+      sourceType: "drive",
       itemCount: selectedMedia.length,
     });
   });

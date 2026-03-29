@@ -58,6 +58,29 @@ export async function createDriveFolder(accessToken: string, name: string): Prom
   }
 }
 
+export async function uploadFileToDriveFromUrl(
+  accessToken: string,
+  sourceUrl: string,
+  fileName: string,
+  mimeType: string,
+  folderId: string,
+): Promise<void> {
+  const drive = createDriveClient(accessToken);
+  const response = await fetch(sourceUrl, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!response.ok) {
+    throw new ExportFailedError(`Failed to download ${fileName}: ${response.status}`);
+  }
+  const buffer = Buffer.from(await response.arrayBuffer());
+  const { Readable } = await import("node:stream");
+
+  await drive.files.create({
+    requestBody: { name: fileName, parents: [folderId], mimeType },
+    media: { mimeType, body: Readable.from(buffer) },
+  });
+}
+
 export async function copyFilesToFolder(accessToken: string, fileIds: string[], folderId: string): Promise<void> {
   const drive = createDriveClient(accessToken);
   const copyPromises = fileIds.map((fileId) =>
