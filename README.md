@@ -10,15 +10,39 @@ Paste a Google Drive folder or Google Photos album link, view all photos and vid
 
 ## Google Cloud Setup
 
+### 1. Create project and enable APIs
+
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project (or select existing)
-3. Enable these APIs:
-   - Google Drive API
-   - Google Photos Library API
-4. Go to **APIs & Services > Credentials > Create Credentials > OAuth 2.0 Client ID**
+2. Create a new project (or select an existing one)
+3. Go to **APIs & Services > Library** and enable these APIs:
+   - **Google Drive API** -- required for loading Drive folder contents and creating output folders
+   - **Photos Picker API** -- required for the "Pick from Google Photos" feature (search for "Photos Picker API", not "Photos Library API")
+
+   Note: The Google Photos Library API was deprecated in March 2025. DrivePick uses the newer Photos Picker API instead.
+
+### 2. Configure OAuth consent screen
+
+1. Go to **APIs & Services > OAuth consent screen**
+2. Select **External** user type, click Create
+3. Fill in app name, user support email, and developer email
+4. On the **Scopes** page, click **Add or Remove Scopes** and add:
+   - `https://www.googleapis.com/auth/drive.readonly`
+   - `https://www.googleapis.com/auth/drive.file`
+   - `https://www.googleapis.com/auth/photospicker.mediaitems.readonly`
+   - `https://www.googleapis.com/auth/userinfo.email`
+5. Save and continue
+6. On the **Test users** page, click **Add users** and add your own Google email address
+7. Save and continue
+
+   The app will remain in "Testing" mode which is fine for personal use. Only emails listed as test users can authenticate.
+
+### 3. Create OAuth credentials
+
+1. Go to **APIs & Services > Credentials**
+2. Click **Create Credentials > OAuth 2.0 Client ID**
    - Application type: **Web application**
    - Authorized redirect URIs: `http://localhost:3001/v1/auth/google/callback`
-5. Copy the Client ID and Client Secret
+3. Copy the **Client ID** and **Client Secret**
 
 ## Environment Variables
 
