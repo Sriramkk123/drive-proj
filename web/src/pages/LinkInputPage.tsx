@@ -10,10 +10,12 @@ import {
   useFinalizePickerSession,
 } from "../api/photos-picker";
 
+const PENDING_LINK_KEY = "drivepick_pending_link";
+
 export function LinkInputPage() {
   const [link, setLink] = useState("");
   const navigate = useNavigate();
-  const { data: auth } = useAuthStatus();
+  const { data: auth, isLoading: authLoading } = useAuthStatus();
   const createCollection = useCreateCollection();
 
   // Photos Picker state
@@ -24,6 +26,25 @@ export function LinkInputPage() {
   const createPickerSession = useCreatePickerSession();
   const { data: pickerStatus } = usePickerSessionStatus(pickerSessionId, polling);
   const finalizeSession = useFinalizePickerSession();
+
+  // Restore pending link after OAuth redirect
+  useEffect(() => {
+    const pending = sessionStorage.getItem(PENDING_LINK_KEY);
+    if (pending && auth?.authenticated) {
+      sessionStorage.removeItem(PENDING_LINK_KEY);
+      setLink(pending);
+      // Auto-submit the pending link
+      createCollection.mutate(pending, {
+        onSuccess: (data) => {
+          navigate(`/collections/${data.id}`);
+        },
+      });
+    } else if (pending && !authLoading && !auth?.authenticated) {
+      // Auth failed, restore the link for the user to try again
+      setLink(pending);
+      sessionStorage.removeItem(PENDING_LINK_KEY);
+    }
+  }, [auth, authLoading]);
 
   // When user finishes picking photos in Google's UI
   useEffect(() => {
@@ -42,6 +63,7 @@ export function LinkInputPage() {
 
   const handleLoad = () => {
     if (!auth?.authenticated) {
+      sessionStorage.setItem(PENDING_LINK_KEY, link);
       redirectToLogin();
       return;
     }
@@ -62,7 +84,6 @@ export function LinkInputPage() {
         setPickerSessionId(data.sessionId);
         setPickerCollectionId(data.collectionId);
         setPolling(true);
-        // Open Google Photos picker in a new tab
         window.open(data.pickerUri, "_blank");
       },
     });
