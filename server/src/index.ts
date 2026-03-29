@@ -1,16 +1,48 @@
-import Fastify from 'fastify';
+import Fastify from "fastify";
+import fastifyCookie from "@fastify/cookie";
+import fastifyCors from "@fastify/cors";
+import { loadConfig } from "./config.js";
+import { DomainError } from "./errors.js";
+import type { ErrorEnvelope } from "./types.js";
 
-const server = Fastify({ logger: true });
+const config = loadConfig();
 
-const port = Number(process.env['PORT'] ?? 3001);
-
-server.get('/health', async () => {
-  return { status: 'ok' };
+const app = Fastify({
+  logger: {
+    level: "info",
+    transport: {
+      target: "pino-pretty",
+      options: { translateTime: "HH:MM:ss Z", ignore: "pid,hostname" },
+    },
+  },
 });
 
-server.listen({ port, host: '0.0.0.0' }, (err) => {
-  if (err) {
-    server.log.error(err);
-    process.exit(1);
+await app.register(fastifyCookie, { secret: config.sessionSecret });
+await app.register(fastifyCors, {
+  origin: config.frontendUrl,
+  credentials: true,
+});
+
+app.setErrorHandler((error, _request, reply) => {
+  if (error instanceof DomainError) {
+    const envelope: ErrorEnvelope = {
+      error: error.code,
+      message: error.message,
+      details: error.details,
+    };
+    return reply.status(error.statusCode).send(envelope);
   }
+
+  app.log.error(error);
+  const envelope: ErrorEnvelope = {
+    error: "internal_error",
+    message: "An unexpected error occurred.",
+    details: [],
+  };
+  return reply.status(500).send(envelope);
 });
+
+// Routes will be registered here in later tasks
+
+await app.listen({ port: config.port, host: "0.0.0.0" });
+app.log.info(`Server running on port ${config.port}`);
