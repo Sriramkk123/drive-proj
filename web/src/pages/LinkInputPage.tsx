@@ -26,11 +26,11 @@ export function LinkInputPage() {
       <div className="flex w-[480px] flex-col items-center gap-6 rounded-2xl bg-card p-10 shadow-sm">
         <h1 className="text-2xl font-bold text-foreground">DrivePick</h1>
         <p className="text-center text-sm text-muted-foreground">
-          Curate your photos from Google Drive or Photos
+          Curate your photos from Google Drive
         </p>
         <div className="flex w-full gap-3">
           <Input
-            placeholder="Paste a Google Drive or Photos link..."
+            placeholder="Paste a Google Drive folder link..."
             value={link}
             onChange={(e) => setLink(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleLoad()}
