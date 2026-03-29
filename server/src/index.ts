@@ -4,6 +4,8 @@ import fastifyCors from "@fastify/cors";
 import { loadConfig } from "./config.js";
 import { DomainError } from "./errors.js";
 import type { ErrorEnvelope } from "./types.js";
+import authPlugin from "./plugins/auth.js";
+import authRoutes from "./routes/auth.js";
 
 const config = loadConfig();
 
@@ -42,7 +44,8 @@ app.setErrorHandler((error, _request, reply) => {
   return reply.status(500).send(envelope);
 });
 
-// Routes will be registered here in later tasks
+await app.register(authPlugin);
+await app.register(authRoutes, { config });
 
 await app.listen({ port: config.port, host: "0.0.0.0" });
 app.log.info(`Server running on port ${config.port}`);
