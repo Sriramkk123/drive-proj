@@ -5,11 +5,13 @@ export interface ApiError {
 }
 
 export class ApiRequestError extends Error {
-  constructor(
-    public readonly status: number,
-    public readonly body: ApiError,
-  ) {
+  readonly status: number;
+  readonly body: ApiError;
+
+  constructor(status: number, body: ApiError) {
     super(body.message);
+    this.status = status;
+    this.body = body;
   }
 }
 
